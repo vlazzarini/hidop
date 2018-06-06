@@ -1,0 +1,10 @@
+add_executable(devlist src/tests/devlist.cpp  src/hid.c)
+add_executable(trackpad  src/tests/devlist.cpp src/hid.c)
+include_directories(src)
+
+if(APPLE)
+find_library(IOKIT IOKit)
+find_library(COREFOUNDATION CoreFoundation)
+target_link_libraries(devlist ${IOKIT} ${COREFOUNDATION})
+target_link_libraries(trackpad ${IOKIT} ${COREFOUNDATION})
+endif(APPLE)
