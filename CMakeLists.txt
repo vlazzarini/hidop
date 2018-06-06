@@ -1,5 +1,6 @@
+set(CMAKE_VERBOSE_MAKEFILE on)
 add_executable(devlist src/tests/devlist.cpp  src/hid.c)
-add_executable(trackpad  src/tests/devlist.cpp src/hid.c)
+add_executable(trackpad  src/tests/trackpad.cpp src/hid.c)
 include_directories(src)
 
 if(APPLE)
