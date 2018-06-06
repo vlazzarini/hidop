@@ -6,8 +6,6 @@
  *******************************************************************************/
 #include <iostream>
 #include "hidapi.h"
-#include <csignal>
-#define MAX_STR 255
 
 
 int main(int argc, char* argv[])

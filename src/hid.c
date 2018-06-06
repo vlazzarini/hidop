@@ -265,8 +265,9 @@ static int32_t get_max_report_length(IOHIDDeviceRef device)
 
 static int get_string_property(IOHIDDeviceRef device, CFStringRef prop, wchar_t *buf, size_t len)
 {
+       
 	CFStringRef str = IOHIDDeviceGetProperty(device, prop);
-
+        
 	buf[0] = 0x0000;
 
 	if (str) {
@@ -349,7 +350,7 @@ static int make_path(IOHIDDeviceRef device, char *buf, size_t len)
 {
 	int res;
 	unsigned short vid, pid;
-	char transport[32];
+	char transport[3]; // VL 6.6.18 was 32, but that was segfaulting
 
 	buf[0] = '\0';
 
@@ -474,7 +475,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			/* Manufacturer and Product strings */
 			get_manufacturer_string(dev, buf, BUF_LEN);
 			cur_dev->manufacturer_string = dup_wcs(buf);
-			get_product_string(dev, buf, BUF_LEN);
+			get_product_string(dev, buf, 7); // WAS BUF_LEN but that was segfaulting.
 			cur_dev->product_string = dup_wcs(buf);
 			
 			/* VID/PID */
