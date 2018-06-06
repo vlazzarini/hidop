@@ -13,7 +13,6 @@ struct HIDPrint : csnd::Plugin<0, 0> {
 
   int init() {
     int i = 0;
-
     struct hid_device_info *devs, *cur_dev;
     std::stringstream sstr;
     hid_init();
