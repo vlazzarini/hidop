@@ -43,7 +43,7 @@ struct SonyJoy : csnd::Plugin<1, 2> {
    hid_device *handle;
 
    int deinit() {
-     hid_close(handle)
+     hid_close(handle);
        return OK;
    }
 
