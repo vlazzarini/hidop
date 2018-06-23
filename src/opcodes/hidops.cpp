@@ -39,11 +39,11 @@ struct HIDPrint : csnd::Plugin<0, 0> {
   }
 };
 
-struct SonyJoy : csnd::Plugin<1, 2> {
+struct TrackPad : csnd::Plugin<2,0> {
    hid_device *handle;
 
    int deinit() {
-     hid_close(handle);
+       hid_close(handle);
        return OK;
    }
 
@@ -54,11 +54,11 @@ struct SonyJoy : csnd::Plugin<1, 2> {
      cur_dev = devs;
       while (cur_dev) {
     // USAGE = 1  (general desktop)
-    // USAGE PAGE = 5 (game controls)
-    // VENDOR ID = 0x54C
-    // PID = 0x5C4 
-       if (cur_dev->usage_page == 1 && cur_dev->usage == 5 &&
-        cur_dev->vendor_id == 0x54C && cur_dev->product_id == 0x5C4) {
+    // USAGE PAGE = 2 (mouse)
+    // VENDOR ID = 0x5AC
+    // PID = 0x278 (Apple Internal Trackpad and keyboard)
+       if (cur_dev->usage_page == 1 && cur_dev->usage == 2 &&
+        cur_dev->vendor_id == 0x5AC && cur_dev->product_id == 0x278) {
       break;
     }
     cur_dev = cur_dev->next;
@@ -67,8 +67,7 @@ struct SonyJoy : csnd::Plugin<1, 2> {
     if (cur_dev) {
       handle = hid_open_path(cur_dev->path);
       if (!handle) {
-        csound->message("unable to open device\n");
-        return NOTOK;
+        return csound->init_error("unable to open device\n");
     } 
    } else return NOTOK;
     hid_set_nonblocking(handle, 1);
@@ -79,11 +78,12 @@ struct SonyJoy : csnd::Plugin<1, 2> {
 
   int kperf() {
      int res;
-     unsigned char buf[128], mask;
-     res = hid_read(handle, buf, sizeof(buf));
-     mask = (unsigned char) (inargs[1] > 0 ? inargs[1] : 0xFF);
-     if(res)
-       outargs[0] = buf[(int) inargs[0]] & mask;
+     char buf[128];
+     res = hid_read(handle, (unsigned char*) buf, sizeof(buf));
+     if(res) {
+       outargs[0] = ((MYFLT) buf[2])/128.;
+       outargs[1] = ((MYFLT) buf[3])/128.;
+     }
      return OK;
   } 
 };
@@ -92,7 +92,7 @@ struct SonyJoy : csnd::Plugin<1, 2> {
 #include <modload.h>
 void csnd::on_load(Csound *csound) {
   csnd::plugin<HIDPrint>(csound, "hidprint", "", "", csnd::thread::i);
-  csnd::plugin<HIDPrint>(csound, "sonyctl", "k", "kk", csnd::thread::ik);
+  csnd::plugin<TrackPad>(csound, "hidtrack", "kk", "", csnd::thread::ik);
   // tracing for debugging purposes, remove when ready.
   csound->message("HID opcode library loaded \n");
 }
