@@ -185,7 +185,7 @@ static void free_hid_device(hid_device *dev) {
   if (dev->source)
     CFRelease(dev->source);
   free(dev->input_report_buf);
-
+ 
   /* Clean up the thread objects */
   pthread_barrier_destroy(&dev->shutdown_barrier);
   pthread_barrier_destroy(&dev->barrier);
@@ -262,7 +262,7 @@ static int get_string_property(IOHIDDeviceRef device, CFStringRef prop,
     CFIndex used_buf_len;
     CFStringGetBytes(str, range, kCFStringEncodingUTF32LE, (char)'?', FALSE,
                      (UInt8 *)buf, len, &used_buf_len);
-    buf[len - 1] = 0x00000000;
+    buf[used_buf_len] = 0x00000000;
     return used_buf_len;
   } else
     return 0;
@@ -281,7 +281,7 @@ static int get_string_property_utf8(IOHIDDeviceRef device, CFStringRef prop,
     CFIndex used_buf_len;
     CFStringGetBytes(str, range, kCFStringEncodingUTF8, (char)'?', FALSE,
                      (UInt8 *)buf, len, &used_buf_len);
-    buf[len - 1] = 0x00000000;
+    buf[used_buf_len] = 0x00000000;
     return used_buf_len;
   } else
     return 0;
@@ -336,10 +336,12 @@ static int init_hid_manager(void) {
 
   /* Initialize all the HID Manager Objects */
   hid_mgr = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
+  if(hid_mgr){
   IOHIDManagerSetDeviceMatching(hid_mgr, NULL);
   IOHIDManagerScheduleWithRunLoop(hid_mgr, CFRunLoopGetCurrent(),
                                   kCFRunLoopDefaultMode);
   res = IOHIDManagerOpen(hid_mgr, kIOHIDOptionsTypeNone);
+  } 
   return (res == kIOReturnSuccess) ? 0 : -1;
 }
 
@@ -374,7 +376,10 @@ hid_enumerate(unsigned short vendor_id, unsigned short product_id) {
   setlocale(LC_ALL, "");
 
   /* Set up the HID Manager if it hasn't been done */
-  hid_init();
+  if(hid_init() != 0) 
+    {
+    return NULL;
+  }
 
   /* Get a list of the Devices */
   CFSetRef device_set = IOHIDManagerCopyDevices(hid_mgr);
